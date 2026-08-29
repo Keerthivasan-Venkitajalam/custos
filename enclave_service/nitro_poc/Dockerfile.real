@@ -1,0 +1,20 @@
+# Real Custos enclave app (T-18). Combines our policy engine with AWS's
+# kmstool_enclave_cli (built separately, see containers/Dockerfile.al2 in the
+# cloned aws-nitro-enclaves-sdk-c repo, tagged custos-kmstool:latest).
+#
+# Uses Amazon Linux (matching the base kmstool_enclave_cli was built against)
+# rather than a Debian-based image, to avoid a glibc mismatch between the
+# binary and the runtime.
+FROM custos-kmstool:latest AS kmstool
+
+FROM public.ecr.aws/amazonlinux/amazonlinux:2023
+RUN dnf install -y python3 python3-pip && dnf clean all
+RUN pip3 install --no-cache-dir "pyjwt[crypto]==2.9.0"
+
+COPY --from=kmstool /kmstool_enclave_cli /app/kmstool_enclave_cli
+COPY --from=kmstool /usr/lib64/libnsm.so /usr/lib64/libnsm.so
+RUN chmod +x /app/kmstool_enclave_cli
+
+COPY custos_enclave_app.py /app/custos_enclave_app.py
+
+CMD ["/usr/bin/python3", "/app/custos_enclave_app.py"]
