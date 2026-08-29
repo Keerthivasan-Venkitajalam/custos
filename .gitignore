@@ -1,0 +1,23 @@
+# Secrets — never commit these
+.env
+keystore/private_key.pem
+*.key
+
+# Public keys ARE meant to be committed (keystore/public_key.pem etc.) —
+# deliberately not using a blanket *.pem rule here.
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.venv-*/
+venv/
+
+# Build artifacts (reproducible via `go build`, not source)
+ledger_gateway/gateway
+ledger_gateway/gateway_linux_arm64
+ledger_gateway/gateway_*
+
+node_modules/
+*.log
+postgres_data/
