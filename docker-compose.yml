@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: custos
+      POSTGRES_PASSWORD: custos
+      POSTGRES_DB: custos
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./ledger_gateway/migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U custos"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
