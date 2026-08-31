@@ -236,8 +236,9 @@
 </main>
 
 <script>
-const ORCH = "http://localhost:8000";
-const GATEWAY = "http://localhost:8200";
+const isLocal = ["localhost", "127.0.0.1"].includes(location.hostname);
+const ORCH = isLocal ? "http://localhost:8000" : "https://custos-orchestrator.onrender.com";
+const GATEWAY = isLocal ? "http://localhost:8200" : "https://custos-gateway.onrender.com";
 let mandateId = null;
 
 const ICON_CHECK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 6.2 L4.8 8.5 L9.5 3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -330,10 +331,12 @@ async function refreshMandate() {
     const pct = Math.max(0, Math.min(100, (d.remaining / d.total_blocked) * 100));
     document.getElementById('mandateBarFill').style.width = pct + '%';
   } catch (e) {
-    document.getElementById('mandateValue').textContent = 'backend offline';
+    document.getElementById('mandateValue').textContent = 'connecting…';
     const empty = document.getElementById('emptyState');
-    if (empty) {
-      empty.innerHTML = 'This is the live app, not a mockup — but it talks to a backend running on <code style="font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:2px;">localhost</code>, which isn\'t running on this server. See <a href="docs.html" style="color:var(--primary-focus)">how it works</a> to run it yourself.';
+    if (empty && !isLocal) {
+      empty.innerHTML = 'This is the live app, not a mockup — it talks to real backend services on a free tier that spin down when idle, so the first request can take 30–60s to wake them up. Try sending a message, or see <a href="docs.html" style="color:var(--primary-focus)">how it works</a>.';
+    } else if (empty) {
+      empty.innerHTML = 'This is the live app, not a mockup — but it talks to a backend running on <code style="font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:2px;">localhost</code>, which isn\'t running right now. See <a href="docs.html" style="color:var(--primary-focus)">how it works</a> to run it yourself.';
     }
   }
 }
@@ -379,6 +382,11 @@ document.getElementById('msgInput').addEventListener('keydown', (e) => {
 
 mandateId = "11111111-1111-1111-1111-111111111111";
 refreshMandate();
+if (!isLocal) {
+  // Render's free tier spins down when idle — give the first load one
+  // automatic retry after services have had time to wake up.
+  setTimeout(refreshMandate, 8000);
+}
 </script>
 </body>
 </html>

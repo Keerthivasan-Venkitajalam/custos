@@ -254,8 +254,15 @@
   </div>
   <p>One run included a payload that genuinely fooled the LLM — it generated a tool call for an amount and recipient the user never stated — and was still caught by the guardrail's semantic-mismatch check before the gateway was ever contacted. That's the actual claim this project makes: it doesn't matter if the model gets fooled, because the model was never the thing with authority to spend.</p>
 
-  <h2>Running it yourself</h2>
-  <p>The interactive demo on this site talks to <code>localhost</code> — it's the actual app, not a mockup, but it needs the backend running on whichever machine has the tab open. Full setup:</p>
+  <h2>Deployment</h2>
+  <p>The interactive demo on this site talks to real hosted services — this build isn't a mockup pointed at nothing:</p>
+  <ul>
+    <li><strong>Frontend</strong> — Vercel (static)</li>
+    <li><strong>Orchestrator, gateway, enclave stub</strong> — Render (free tier — the first request after idle can take 30–60s while an instance wakes up)</li>
+    <li><strong>Ledger database</strong> — Neon Postgres</li>
+  </ul>
+  <p>This hosted path uses the local <em>simulated</em> enclave stub (deterministic policy engine, RS256 signing), not the real AWS Nitro Enclave — that one requires actual Nitro-capable EC2 hardware and isn't something a serverless platform can run. See the AWS integration section above for what was verified there instead.</p>
+  <p>To run the whole stack locally instead:</p>
   <pre><code>git clone https://github.com/Keerthivasan-Venkitajalam/custos.git
 cd custos
 docker compose up -d                     # Postgres
