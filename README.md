@@ -5,6 +5,19 @@ structurally impossible for a prompt-injected AI shopping agent to authorize an 
 payment, by requiring an isolated hardware enclave's cryptographic signature before any
 transaction can execute.
 
+## Live
+
+- **App**: [custos-amber.vercel.app](https://custos-amber.vercel.app) — Vercel (static), auto-deploys on push to `main`
+- **How it works**: [custos-amber.vercel.app/docs.html](https://custos-amber.vercel.app/docs.html)
+- **Services**: `custos-orchestrator`, `custos-gateway`, `custos-enclave` — three independent
+  services on Render (free tier — the first request after idle can take 30–60s to wake up)
+- **Ledger**: Neon Postgres
+
+This hosted path runs the local *simulated* enclave (deterministic policy engine, RS256
+signing) — the real AWS Nitro Enclave (below) needs actual Nitro-capable hardware a serverless
+platform can't provide, so it isn't part of the live site. See `tasks.md` T-18b for what broke
+and got fixed getting this deployed for real.
+
 ## Spec-Driven Development
 
 This project is built spec-first. Read in this order:

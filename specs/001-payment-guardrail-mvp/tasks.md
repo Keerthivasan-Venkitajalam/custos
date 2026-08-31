@@ -278,6 +278,32 @@ Legend: 🔴 blocking dependency for most later work · 🟡 can be parallelized
       call, or a differently-measured enclave, gets denied) — before claiming this final piece
       closed.
 
+- [x] **T-18b** Public cloud deployment of the local-stub path (separate from the AWS Nitro
+      Enclave work above, which stays the production target). **Frontend**: Vercel, static,
+      auto-deploys on push to `main`. **Services**: `custos-orchestrator`, `custos-gateway`,
+      `custos-enclave` — three independent Render web services, each with its own Dockerfile.
+      **Database**: Neon Postgres (Singapore region). Real gaps hit and fixed along the way,
+      not smoothed over:
+      - `go:embed` needs the `migrations/` directory present at Docker build time — the
+        gateway's Dockerfile only copied `gateway.go`, so the first deploy failed at compile.
+      - The gateway's `go.mod` requires Go 1.26.5; the Dockerfile's `golang:1.23-alpine` base
+        couldn't satisfy it — bumped to `golang:1.26-alpine`.
+      - Render's native Python buildpack defaulted to Python 3.14, which has no prebuilt
+        `pydantic-core` wheel yet — build fell through to compiling from Rust source inside a
+        sandboxed environment with a read-only Cargo cache, which cannot succeed. Fixed with an
+        explicit `.python-version` pinning 3.12.8.
+      - `lib/pq` (the Go gateway's driver) doesn't parse Neon's `channel_binding=require` query
+        param — dropped it from that one service's connection string; `psycopg` (Python) handles
+        it fine and keeps it.
+      - The gateway self-migrates on every boot (`//go:embed migrations/001_init.sql`, run via
+        `db.Exec` at startup) since Render's managed Postgres has no
+        `docker-entrypoint-initdb.d` equivalent — every statement in the migration is
+        `IF NOT EXISTS` / `ON CONFLICT DO NOTHING` so this is safe to re-run on every deploy.
+      Verified end to end against the live deployed services, not just individually: real
+      enclave signs, real gateway verifies and executes, real Neon ledger updates — confirmed
+      via direct curl calls and via the actual orchestrator `/chat` endpoint before wiring the
+      frontend to it.
+
 ## Phase 7 — Observability & X-Ray Dashboard (D10)
 
 - [ ] **T-19** 🟡 Prometheus metrics from plan.md §8 exported by orchestrator + gateway; Grafana
