@@ -22,8 +22,16 @@ DATABASE_URL = os.environ.get(
 )
 JWT_TTL_SECONDS = 5
 
-with open(PRIVATE_KEY_PATH, "rb") as f:
-    PRIVATE_KEY = f.read()
+# PRIVATE_KEY_PEM (raw PEM content, e.g. a hosting provider's secret env var)
+# takes priority over a file path — deployed environments shouldn't need a
+# key file checked into a predictable path, and the real key never should be
+# checked into the repo at all.
+_private_key_pem = os.environ.get("PRIVATE_KEY_PEM")
+if _private_key_pem:
+    PRIVATE_KEY = _private_key_pem.encode()
+else:
+    with open(PRIVATE_KEY_PATH, "rb") as f:
+        PRIVATE_KEY = f.read()
 
 app = FastAPI(title="custos-enclave-stub")
 
