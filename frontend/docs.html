@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Custos — How It Works</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg-app: #0B0D0F; --bg-surface: #111418; --bg-elevated: #171B21; --bg-active: #20252D;
+    --border-subtle: rgb(255 255 255 / 0.07); --border-default: rgb(255 255 255 / 0.12);
+    --text-primary: #F3F5F7; --text-secondary: #C5CBD3; --text-muted: #8B939F;
+    --primary: #3268F5; --primary-focus: #7DA0FF;
+    --success: #10B981; --danger: #E11D48; --danger-text: #FF8DA1;
+    --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;
+    --r-xs:2px;--r-sm:4px;--r-md:6px;--r-lg:10px;--r-xl:12px;
+    --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: var(--font-ui); background: var(--bg-app); color: var(--text-primary);
+    font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--sp-3) var(--sp-6); border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-surface); position: sticky; top: 0; z-index: 10;
+  }
+  .brand { display: flex; align-items: center; gap: var(--sp-3); }
+  .brand-mark { width: 22px; height: 22px; }
+  .brand-name { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
+  .brand-tag { color: var(--text-muted); font-size: 12px; margin-left: var(--sp-2); padding-left: var(--sp-2); border-left: 1px solid var(--border-subtle); }
+  nav a { color: var(--text-secondary); text-decoration: none; font-size: 13px; font-weight: 500; margin-left: var(--sp-5); }
+  nav a:hover { color: var(--text-primary); }
+
+  main { max-width: 860px; margin: 0 auto; padding: var(--sp-8) var(--sp-6) 120px; }
+
+  h1 { font-size: 26px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 var(--sp-2); }
+  .subtitle { color: var(--text-muted); font-size: 15px; margin-bottom: var(--sp-8); }
+
+  h2 {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--primary-focus); margin: var(--sp-8) 0 var(--sp-4); padding-top: var(--sp-6);
+    border-top: 1px solid var(--border-subtle);
+  }
+  h2:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  h3 { font-size: 15px; font-weight: 600; margin: var(--sp-5) 0 var(--sp-2); color: var(--text-primary); }
+  p { color: var(--text-secondary); margin: 0 0 var(--sp-4); }
+  a { color: var(--primary-focus); }
+  ul, ol { color: var(--text-secondary); padding-left: var(--sp-5); margin: 0 0 var(--sp-4); }
+  li { margin-bottom: var(--sp-2); }
+  code {
+    font-family: var(--font-mono); font-size: 12.5px; background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle); border-radius: var(--r-xs); padding: 1px 5px; color: var(--text-primary);
+  }
+  pre {
+    background: var(--bg-app); border: 1px solid var(--border-subtle); border-radius: var(--r-sm);
+    padding: var(--sp-3) var(--sp-4); overflow-x: auto; margin: 0 0 var(--sp-4);
+  }
+  pre code { background: none; border: none; padding: 0; font-size: 12px; line-height: 1.6; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin-bottom: var(--sp-4); }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+  @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
+    padding: var(--sp-4);
+  }
+  .card h3 { margin-top: 0; }
+  .card p:last-child { margin-bottom: 0; }
+  .card .path { font-family: var(--font-mono); font-size: 12px; color: var(--primary-focus); display: block; margin-bottom: var(--sp-2); }
+
+  .stat-row { display: flex; gap: var(--sp-4); flex-wrap: wrap; margin: var(--sp-4) 0; }
+  .stat {
+    background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-lg);
+    padding: var(--sp-4) var(--sp-5); flex: 1; min-width: 160px;
+  }
+  .stat .num { font-family: var(--font-mono); font-size: 24px; font-weight: 500; color: var(--success); font-variant-numeric: tabular-nums; }
+  .stat .label { font-size: 12px; color: var(--text-muted); margin-top: var(--sp-1); }
+
+  .flow-step {
+    display: flex; gap: var(--sp-4); padding: var(--sp-3) 0; border-bottom: 1px solid var(--border-subtle);
+    align-items: flex-start;
+  }
+  .flow-step:last-child { border-bottom: none; }
+  .flow-num {
+    width: 22px; height: 22px; border-radius: var(--r-sm); background: var(--bg-elevated);
+    border: 1px solid var(--border-default); display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 11px; color: var(--primary-focus); flex-shrink: 0;
+  }
+  .flow-body strong { color: var(--text-primary); }
+  .flow-body p { margin: var(--sp-1) 0 0; }
+
+  .badge-note {
+    display: inline-flex; align-items: center; gap: var(--sp-1); height: 20px; padding: 0 var(--sp-2);
+    border-radius: var(--r-sm); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    background: rgb(16 185 129 / 0.10); border: 1px solid rgb(16 185 129 / 0.20); color: var(--success);
+    margin-left: var(--sp-2); vertical-align: middle;
+  }
+  .badge-note.pending { background: rgb(245 158 11 / 0.10); border-color: rgb(245 158 11 / 0.20); color: #F5A623; }
+
+  footer { border-top: 1px solid var(--border-subtle); padding: var(--sp-6); text-align: center; color: var(--text-muted); font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img class="brand-mark" src="assets/favicon.png" alt="Custos" />
+    <span class="brand-name">CUSTOS</span>
+    <span class="brand-tag">how it works</span>
+  </div>
+  <nav>
+    <a href="index.html">← Live demo</a>
+    <a href="https://github.com/Keerthivasan-Venkitajalam/custos" target="_blank">GitHub</a>
+  </nav>
+</header>
+
+<main>
+  <h1>How Custos works</h1>
+  <p class="subtitle">A cryptographic guardrail that makes it structurally impossible for a prompt-injected AI agent to authorize a payment it shouldn't — plus exactly what's real vs. simulated in this build.</p>
+
+  <h2>The problem</h2>
+  <p>An AI shopping agent holds a pre-authorized payment mandate — a fund block it can debit from without re-prompting for a PIN each time. If an attacker hides instructions inside content the agent reads (a product page, a support ticket, an email), the agent can be talked into authorizing a payment the user never asked for. System-prompt instructions and RAG-based policy hints are advisory text a model can be argued out of — they are not a security boundary.</p>
+  <p>Custos replaces "please don't" with "physically cannot": the LLM never has the authority to move money. It can only <em>propose</em> a payment. A separate, isolated policy engine — inside a real AWS Nitro Enclave in the production path — independently checks the proposal against the mandate and the user's actual words, and only that engine's cryptographic signature can make a payment gateway execute anything.</p>
+
+  <h2>Architecture — three planes</h2>
+  <p>The system is split into three trust domains that never share code or memory:</p>
+  <div class="grid-3">
+    <div class="card">
+      <span class="path">agent_orchestrator/</span>
+      <h3>Agentic Plane</h3>
+      <p><strong>Untrusted.</strong> Runs the LLM conversation (FastAPI + a hosted tool-calling LLM). Generates a proposed tool call. Never talks to the payment gateway directly — every proposal is routed through the guardrail first.</p>
+    </div>
+    <div class="card">
+      <span class="path">enclave_service/</span>
+      <h3>Enclave Plane</h3>
+      <p><strong>The guardrail.</strong> Checks the proposal's amount/recipient against the mandate and against what the user actually said. Only signs a JWT if it's genuinely approved — nothing here ever executes a payment itself.</p>
+    </div>
+    <div class="card">
+      <span class="path">ledger_gateway/</span>
+      <h3>Ledger Plane</h3>
+      <p><strong>Deterministic executor.</strong> A Go service that verifies the guardrail's signature and nothing else. No signature, no execution — every request without a valid one is rejected before it touches the database.</p>
+    </div>
+  </div>
+
+  <h2>What each part of the repo does</h2>
+  <div class="grid-2">
+    <div class="card">
+      <span class="path">specs/001-payment-guardrail-mvp/</span>
+      <h3>Spec-driven development docs</h3>
+      <p><code>spec.md</code> (what/why, user stories), <code>plan.md</code> (architecture, data model, API contracts), <code>tasks.md</code> (the full build log, including real evidence and bugs found during AWS integration).</p>
+    </div>
+    <div class="card">
+      <span class="path">CONSTITUTION.md</span>
+      <h3>Non-negotiable principles</h3>
+      <p>Zero-trust agent, fail-closed on guardrail outage, deterministic enforcement over probabilistic trust, no real banking rails — every design decision is checked against this.</p>
+    </div>
+    <div class="card">
+      <span class="path">frontend/</span>
+      <h3>Chat UI + attestation viewer</h3>
+      <p>The page you're on now (and <a href="index.html">the demo</a>) — a split view of the merchant chat and a live feed of every guardrail decision, approved or rejected, with the signed proof.</p>
+    </div>
+    <div class="card">
+      <span class="path">adversarial_eval/</span>
+      <h3>Injection test suite</h3>
+      <p>A curated set of benign purchase requests and indirect prompt-injection payloads, run end to end against the live system to measure prevention rate and false positives — not a claimed number, a measured one.</p>
+    </div>
+    <div class="card">
+      <span class="path">enclave_service/nitro_poc/</span>
+      <h3>Real AWS Nitro Enclave app</h3>
+      <p>The production target: a policy engine that runs inside actual Nitro Enclave hardware, decrypts its signing key via attestation-gated AWS KMS, and signs approvals in memory — never on disk.</p>
+    </div>
+    <div class="card">
+      <span class="path">ledger_gateway/migrations/</span>
+      <h3>Ledger schema</h3>
+      <p>PostgreSQL schema for mandates, transactions, and an append-only audit log — <code>REVOKE UPDATE, DELETE</code> enforced at the database level, not just by convention.</p>
+    </div>
+  </div>
+
+  <h2>End-to-end request flow</h2>
+  <div class="flow-step">
+    <div class="flow-num">1</div>
+    <div class="flow-body"><strong>User sends a message</strong><p>The orchestrator holds the conversation and may generate a tool call proposing a payment — amount, recipient, mandate ID.</p></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">2</div>
+    <div class="flow-body"><strong>Proposal routed to the guardrail, never the gateway</strong><p>The orchestrator's only path to a payment is through the enclave's <code>/guardrail/evaluate</code>. There is exactly one call site to the gateway in the whole orchestrator, and it only fires after a signed approval comes back.</p></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">3</div>
+    <div class="flow-body"><strong>Guardrail checks the proposal against ground truth</strong><p>Does the amount fit the remaining mandate balance? Does the amount or recipient actually appear in what the user said — or only in content the agent merely read? A proposal that only exists because of injected content gets rejected as a semantic mismatch, even if the LLM itself was fooled into generating it.</p></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">4</div>
+    <div class="flow-body"><strong>Approved → signed JWT, 5-second TTL</strong><p>Signed with an RSA key that — in the real AWS path — only ever exists in plaintext inside the attested enclave's memory, decrypted on demand via KMS.</p></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">5</div>
+    <div class="flow-body"><strong>Gateway verifies the signature, not the story</strong><p>The Go gateway never sees the prompt, the conversation, or the agent's reasoning — only a signature it checks against the public key. Expired, replayed, or unsigned requests are rejected before the database is ever touched.</p></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">6</div>
+    <div class="flow-body"><strong>Row-locked debit, append-only audit entry</strong><p><code>SELECT ... FOR UPDATE</code> on the mandate row prevents a race between concurrent proposals from ever double-spending the same budget.</p></div>
+  </div>
+
+  <h2>The real AWS integration <span class="badge-note">Verified</span></h2>
+  <p>This isn't a diagram of what an enclave <em>would</em> do — the signing pipeline below was built and verified against actual AWS Nitro Enclave hardware:</p>
+  <ol>
+    <li><strong>EC2 host</strong> — a Nitro-capable instance (Graviton <code>c6g.xlarge</code>, not the far pricier <code>.metal</code> family some older docs imply is required) with the enclave option enabled at launch.</li>
+    <li><strong>AWS KMS</strong> — a symmetric key seals the enclave's RSA signing key at rest. The key policy grants the host's IAM role exactly <code>kms:Encrypt</code> / <code>kms:Decrypt</code> / <code>kms:DescribeKey</code> on that one key — nothing broader.</li>
+    <li><strong>Attestation-gated decrypt</strong> — the enclave calls <code>kmstool_enclave_cli</code> (AWS's own NSM-attestation + KMS SDK tooling, built from source, not hand-rolled crypto) to decrypt the sealed key. This only succeeds if the enclave's measured PCR0 matches the KMS key policy's condition — a code integrity check enforced by AWS's hardware, not by anything this app trusts about itself.</li>
+    <li><strong>In-memory signing</strong> — the decrypted private key never touches disk. It signs approved JWTs locally inside the enclave and is discarded on process exit.</li>
+    <li><strong>VSOCK-only boundary</strong> — the enclave has no network interface at all. A small bridge process on the parent host relays requests over VSOCK and exposes the exact same HTTP contract as the local dev stub, so the orchestrator's code is identical whether it's talking to the local stub or the real enclave.</li>
+  </ol>
+  <p>Full verification trail — including the real PCR measurements, the exact `kmstool` build recipe, and a false-positive bug that testing against the real enclave surfaced and how it was fixed — is in <code>specs/001-payment-guardrail-mvp/tasks.md</code> (search for "T-16" through "T-18").</p>
+
+  <h2>What's real vs. simulated in this build</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Real</h3>
+      <ul>
+        <li>LLM tool-calling agent, live API calls</li>
+        <li>Deterministic policy engine (mandate + semantic checks)</li>
+        <li>RS256 JWT signing and verification</li>
+        <li>Reject-by-default payment gateway with replay protection</li>
+        <li>Row-locked Postgres ledger, append-only audit log</li>
+        <li>AWS Nitro Enclave, attestation-gated KMS decrypt, in-memory signing</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Simulated / out of scope</h3>
+      <ul>
+        <li>No live banking or UPI network integration — a mock gateway only, permanently by design</li>
+        <li>No custom-trained models — hosted LLM APIs only</li>
+        <li>Enclave's mandate ledger is seeded once at boot, not live-synced to Postgres (documented limitation, not hidden)</li>
+        <li>No merchant onboarding, multi-tenant auth, or account management</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Measured results</h2>
+  <p>From the adversarial evaluation suite, run end to end against the live system (not claimed — reproducible via <code>adversarial_eval/run_eval.py</code>):</p>
+  <div class="stat-row">
+    <div class="stat"><div class="num">100%</div><div class="label">Injection payloads prevented</div></div>
+    <div class="stat"><div class="num">0%</div><div class="label">False positives on legitimate requests</div></div>
+    <div class="stat"><div class="num">&lt;1ms</div><div class="label">Guardrail signing latency (post-boot)</div></div>
+  </div>
+  <p>One run included a payload that genuinely fooled the LLM — it generated a tool call for an amount and recipient the user never stated — and was still caught by the guardrail's semantic-mismatch check before the gateway was ever contacted. That's the actual claim this project makes: it doesn't matter if the model gets fooled, because the model was never the thing with authority to spend.</p>
+
+  <h2>Running it yourself</h2>
+  <p>The interactive demo on this site talks to <code>localhost</code> — it's the actual app, not a mockup, but it needs the backend running on whichever machine has the tab open. Full setup:</p>
+  <pre><code>git clone https://github.com/Keerthivasan-Venkitajalam/custos.git
+cd custos
+docker compose up -d                     # Postgres
+cd ledger_gateway && go run gateway.go & cd ..
+cd enclave_service && uvicorn policy_engine:app --port 8100 & cd ..
+cd agent_orchestrator && uvicorn main:app --port 8000 & cd ..
+cd frontend && python3 -m http.server 8080</code></pre>
+  <p>Full instructions, including the real AWS Nitro Enclave path, are in the repo's <code>README.md</code> and <code>specs/001-payment-guardrail-mvp/</code>.</p>
+
+</main>
+
+<footer>Custos — built spec-first. See the <a href="https://github.com/Keerthivasan-Venkitajalam/custos">source</a> for the complete constitution, spec, plan, and task history.</footer>
+
+</body>
+</html>
