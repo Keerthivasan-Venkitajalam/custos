@@ -10,6 +10,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"database/sql"
+	_ "embed"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -22,6 +23,18 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	_ "github.com/lib/pq"
 )
+
+//go:embed migrations/001_init.sql
+var migrationSQL string
+
+// runMigrations applies the schema on every boot. Safe to re-run — every
+// statement in migrations/001_init.sql is IF-NOT-EXISTS / ON-CONFLICT.
+// Exists because Render's managed Postgres has no docker-entrypoint-initdb.d
+// equivalent; local dev still gets the schema for free from that instead.
+func runMigrations(db *sql.DB) error {
+	_, err := db.Exec(migrationSQL)
+	return err
+}
 
 type debitRequest struct {
 	MandateID    string `json:"mandate_id"`
@@ -43,9 +56,18 @@ var (
 )
 
 func loadPublicKey(path string) (*rsa.PublicKey, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
+	var data []byte
+	var err error
+	// JWT_PUBLIC_KEY_PEM (raw PEM content, e.g. a Render secret) takes
+	// priority over a file path — deployed environments shouldn't need a
+	// checked-out key file at a predictable relative path.
+	if pemEnv := os.Getenv("JWT_PUBLIC_KEY_PEM"); pemEnv != "" {
+		data = []byte(pemEnv)
+	} else {
+		data, err = os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
 	}
 	block, _ := pem.Decode(data)
 	if block == nil {
@@ -182,10 +204,23 @@ func writeResult(w http.ResponseWriter, code int, res debitResponse) {
 	json.NewEncoder(w).Encode(res)
 }
 
+// CORS: this demo deployment is intentionally public read/write on a mock
+// gateway with no real money behind it (Constitution §5). Wraps every
+// handler so the hosted frontend (a different origin) can reach it.
+func withCORS(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, x-custos-proof-of-guardrail")
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		next(w, r)
+	}
+}
+
 func mandateStatusHandler(w http.ResponseWriter, r *http.Request) {
-	// CORS: local demo only, so the browser-based X-Ray UI can read balances
-	// directly. Never appropriate outside a local dev/demo box.
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 	id := r.URL.Query().Get("mandate_id")
 	if id == "" {
 		id = "11111111-1111-1111-1111-111111111111"
@@ -220,10 +255,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to db: %v", err)
 	}
+	if err := runMigrations(db); err != nil {
+		log.Fatalf("failed to apply migrations: %v", err)
+	}
 
-	http.HandleFunc("/execute-debit", executeDebitHandler)
-	http.HandleFunc("/mandate", mandateStatusHandler)
+	http.HandleFunc("/execute-debit", withCORS(executeDebitHandler))
+	http.HandleFunc("/mandate", withCORS(mandateStatusHandler))
 
-	log.Println("Custos gateway listening on :8200 — reject-by-default, RS256-only")
-	log.Fatal(http.ListenAndServe(":8200", nil))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8200"
+	}
+	log.Printf("Custos gateway listening on :%s — reject-by-default, RS256-only", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
