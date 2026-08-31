@@ -4,152 +4,189 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Custos — Payment Guardrail</title>
+<link rel="icon" type="image/png" href="assets/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+  /* ---- Design tokens (custos_design_tokens.json) ---- */
   :root {
     color-scheme: dark;
-    --bg: #0d0f13;
-    --bg-raised: #14171d;
-    --bg-sunken: #0a0c10;
-    --border: #22262f;
-    --border-soft: #1a1d24;
-    --text: #e4e6eb;
-    --text-muted: #8b909c;
-    --text-faint: #565b66;
-    --accent: #5b7cfa;
-    --accent-soft: #1c2438;
-    --ok: #3ecf8e;
-    --ok-bg: #0f2419;
-    --err: #f2545b;
-    --err-bg: #2a1416;
-    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --bg-app: #0B0D0F;
+    --bg-surface: #111418;
+    --bg-elevated: #171B21;
+    --bg-active: #20252D;
+    --border-subtle: rgb(255 255 255 / 0.07);
+    --border-default: rgb(255 255 255 / 0.12);
+    --border-control: #4B5563;
+    --text-primary: #F3F5F7;
+    --text-secondary: #C5CBD3;
+    --text-muted: #8B939F;
+    --primary: #3268F5;
+    --primary-focus: #7DA0FF;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #E11D48;
+    --danger-text: #FF8DA1;
+    --info: #7DD3FC;
+
+    --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;
+
+    --r-xs: 2px; --r-sm: 4px; --r-md: 6px; --r-lg: 10px; --r-xl: 12px;
+
+    --font-ui: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
 
   * { box-sizing: border-box; }
 
   body {
     margin: 0;
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
+    font-family: var(--font-ui);
+    background: var(--bg-app);
+    color: var(--text-primary);
     height: 100vh;
     display: flex;
     flex-direction: column;
-    font-size: 14px;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
   }
 
+  .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+  /* ---- Header ---- */
   header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg-raised);
+    padding: var(--sp-3) var(--sp-6);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-surface);
     flex-shrink: 0;
   }
 
-  .brand { display: flex; align-items: center; gap: 10px; }
-  .brand-mark {
-    width: 22px; height: 22px; border-radius: 6px;
-    background: linear-gradient(135deg, var(--accent), #8a6ff0);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: white;
+  .brand { display: flex; align-items: center; gap: var(--sp-3); }
+  .brand-mark { width: 22px; height: 22px; flex-shrink: 0; object-fit: contain; }
+  .brand-name {
+    font-weight: 600; font-size: 14px; line-height: 1.4; letter-spacing: -0.01em;
+    color: var(--text-primary);
   }
-  .brand-name { font-weight: 600; font-size: 14px; letter-spacing: -0.01em; }
-  .brand-tag { color: var(--text-faint); font-size: 12px; margin-left: 6px; }
+  .brand-tag {
+    color: var(--text-muted); font-size: 12px; margin-left: var(--sp-2);
+    padding-left: var(--sp-2); border-left: 1px solid var(--border-subtle);
+  }
 
-  .mandate-stat {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 12px; color: var(--text-muted);
+  .mandate-stat { display: flex; align-items: center; gap: var(--sp-3); }
+  .mandate-label {
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--text-muted);
   }
-  .mandate-stat .value { color: var(--text); font-family: var(--mono); font-weight: 600; }
-  .mandate-stat .bar {
-    width: 90px; height: 4px; border-radius: 2px; background: var(--border);
-    overflow: hidden;
-  }
-  .mandate-stat .bar-fill { height: 100%; background: var(--accent); transition: width .3s ease; }
+  .mandate-value { color: var(--text-primary); font-family: var(--font-mono); font-size: 12px; }
+  .mandate-bar { width: 100px; height: 3px; border-radius: var(--r-xs); background: var(--bg-active); overflow: hidden; }
+  .mandate-bar-fill { height: 100%; background: var(--primary); }
 
+  /* ---- Layout ---- */
   main { flex: 1; display: flex; overflow: hidden; }
   .pane { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-  .pane + .pane { border-left: 1px solid var(--border); }
+  .pane + .pane { border-left: 1px solid var(--border-subtle); }
   .pane-header {
-    padding: 12px 16px; border-bottom: 1px solid var(--border-soft);
-    font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-faint); flex-shrink: 0;
+    padding: var(--sp-3) var(--sp-4);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--text-muted); flex-shrink: 0;
   }
 
-  /* --- Chat pane --- */
-  #log { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-  .empty-state { margin: auto; text-align: center; color: var(--text-faint); font-size: 13px; max-width: 280px; }
+  /* ---- Chat (Pattern 3: terminal-style log, no bubbles) ---- */
+  #log { flex: 1; overflow-y: auto; padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
+  .empty-state { margin: auto; text-align: center; color: var(--text-muted); font-size: 13px; max-width: 300px; line-height: 1.5; }
 
-  .msg { display: flex; flex-direction: column; max-width: 78%; }
-  .msg.user { align-self: flex-end; align-items: flex-end; }
-  .msg.agent { align-self: flex-start; align-items: flex-start; }
-  .msg .role { font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-faint); margin-bottom: 3px; padding: 0 2px; }
-  .msg .bubble { padding: 9px 13px; border-radius: 10px; line-height: 1.5; white-space: pre-wrap; }
-  .msg.user .bubble { background: var(--accent-soft); border: 1px solid #2d3a5c; border-bottom-right-radius: 3px; }
-  .msg.agent .bubble { background: var(--bg-raised); border: 1px solid var(--border-soft); border-bottom-left-radius: 3px; }
-  .msg.pending .bubble { color: var(--text-faint); font-style: italic; }
+  .msg { display: flex; gap: var(--sp-2); align-items: flex-start; }
+  .msg.user .msg-marker { color: var(--text-muted); }
+  .msg.agent .msg-marker { color: var(--primary); }
+  .msg-marker { font-family: var(--font-mono); font-size: 13px; line-height: 1.5; flex-shrink: 0; width: 14px; }
+  .msg-content { flex: 1; min-width: 0; }
 
-  .composer { border-top: 1px solid var(--border); padding: 12px 16px; flex-shrink: 0; }
-  .presets { display: flex; gap: 6px; margin-bottom: 10px; }
+  .msg.user .msg-content { color: var(--text-primary); line-height: 1.5; white-space: pre-wrap; }
+
+  .msg.agent .msg-content {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-default);
+    border-radius: var(--r-md);
+    padding: var(--sp-3) var(--sp-4);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    color: var(--text-primary);
+  }
+  .msg.agent.pending .msg-content { color: var(--text-muted); }
+
+  .composer { border-top: 1px solid var(--border-subtle); padding: var(--sp-4); flex-shrink: 0; }
+  .presets { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-3); }
+
   .btn {
     font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
-    border-radius: 6px; padding: 6px 11px; transition: background .12s, border-color .12s;
-    background: var(--bg-raised); color: var(--text-muted); border: 1px solid var(--border);
+    border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3);
+    background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-default);
+    transition: border-color .1s, color .1s;
   }
-  .btn:hover { background: #1a1e26; color: var(--text); border-color: #2c313c; }
+  .btn:hover { color: var(--text-primary); border-color: var(--border-control); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-  .btn-primary { background: var(--accent); color: white; border-color: var(--accent); font-weight: 600; }
-  .btn-primary:hover { background: #6c8bff; border-color: #6c8bff; }
+  .btn-primary { background: var(--primary); color: #F8FAFF; border-color: var(--primary); font-weight: 600; }
+  .btn-primary:hover { border-color: var(--primary-focus); color: #FFFFFF; }
 
-  label.field-label { display: block; font-size: 11px; color: var(--text-faint); margin: 10px 0 4px; }
+  label.field-label {
+    display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.03em;
+    color: var(--text-muted); margin: var(--sp-3) 0 var(--sp-2);
+  }
   textarea, input {
-    width: 100%; background: var(--bg-sunken); color: var(--text);
-    border: 1px solid var(--border); border-radius: 7px; padding: 9px 11px;
+    width: 100%; background: var(--bg-app); color: var(--text-primary);
+    border: 1px solid var(--border-default); border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3);
     font-family: inherit; font-size: 13px; resize: none;
   }
-  textarea:focus, input:focus { outline: none; border-color: var(--accent); }
-  #ctxInput { height: 64px; font-family: var(--mono); font-size: 12px; }
-  .send-row { display: flex; gap: 8px; margin-top: 10px; align-items: flex-end; }
-  #msgInput { flex: 1; height: 40px; padding-top: 10px; }
+  textarea:focus, input:focus { outline: none; border-color: var(--primary); }
+  #ctxInput { height: 64px; font-family: var(--font-mono); font-size: 12px; line-height: 1.5; }
+  .send-row { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); align-items: flex-end; }
+  #msgInput { flex: 1; height: 38px; padding-top: var(--sp-2); }
 
-  /* --- X-Ray pane --- */
-  #xray { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  /* ---- Attestation feed (Pattern 2: key-value data card) ---- */
+  #xray { flex: 1; overflow-y: auto; padding: var(--sp-4); display: flex; flex-direction: column; gap: var(--sp-3); }
 
-  .attempt-card { border: 1px solid var(--border); border-radius: 9px; overflow: hidden; background: var(--bg-raised); }
-  .attempt-card-top {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 13px; border-bottom: 1px solid var(--border-soft);
-  }
+  .attempt-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--r-lg); padding: var(--sp-4); }
+  .attempt-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-3); }
+  .attempt-latency { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+
+  /* Pattern 1: status badge — tinted background, never solid fill */
   .badge {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-    padding: 3px 8px; border-radius: 20px;
+    display: inline-flex; align-items: center; gap: var(--sp-1);
+    height: 22px; padding: 0 var(--sp-2); border-radius: var(--r-sm);
+    font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    border: 1px solid transparent;
   }
-  .badge-approved { background: var(--ok-bg); color: var(--ok); }
-  .badge-rejected { background: var(--err-bg); color: var(--err); }
-  .attempt-latency { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+  .badge svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .badge-approved { background: rgb(16 185 129 / 0.10); border-color: rgb(16 185 129 / 0.20); color: var(--success); }
+  .badge-rejected { background: rgb(225 29 72 / 0.10); border-color: rgb(225 29 72 / 0.20); color: var(--danger-text); }
 
-  .kv-grid { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 12px 13px; font-size: 12px; }
-  .kv-grid dt { color: var(--text-faint); }
-  .kv-grid dd { margin: 0; font-family: var(--mono); color: var(--text); word-break: break-all; }
-  .kv-grid dd.reason-ok { color: var(--ok); }
-  .kv-grid dd.reason-bad { color: var(--err); }
+  .kv-grid { display: grid; grid-template-columns: 90px 1fr; gap: var(--sp-2) var(--sp-4); }
+  .kv-grid dt { color: var(--text-muted); font-size: 12px; line-height: 1.4; }
+  .kv-grid dd { margin: 0; font-size: 13px; color: var(--text-primary); line-height: 1.4; word-break: break-all; }
+  .kv-grid dd.mono { font-family: var(--font-mono); font-size: 12px; }
+  .kv-grid dd.reason-ok { color: var(--success); font-family: var(--font-mono); font-size: 12px; }
+  .kv-grid dd.reason-bad { color: var(--danger-text); font-family: var(--font-mono); font-size: 12px; }
 
-  .jwt-strip {
-    margin: 0 13px 12px; padding: 8px 10px; background: var(--bg-sunken); border-radius: 6px;
-    font-family: var(--mono); font-size: 10.5px; color: var(--text-faint);
+  /* Nested nested inset well for the raw JWT — pushed down to bg-app per nested-radius rule */
+  .jwt-well {
+    margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-3);
+    background: var(--bg-app); border-radius: var(--r-xs);
+    font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);
     overflow-x: auto; white-space: nowrap;
   }
-  .jwt-strip.none { font-style: italic; }
 
   ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: var(--r-sm); }
   ::-webkit-scrollbar-track { background: transparent; }
 
   @media (max-width: 760px) {
     main { flex-direction: column; }
-    .pane + .pane { border-left: none; border-top: 1px solid var(--border); }
+    .pane + .pane { border-left: none; border-top: 1px solid var(--border-subtle); }
   }
 </style>
 </head>
@@ -157,22 +194,23 @@
 
 <header>
   <div class="brand">
-    <div class="brand-mark">C</div>
-    <div class="brand-name">Custos</div>
-    <div class="brand-tag">payment guardrail</div>
+    <img class="brand-mark" src="assets/favicon.png" alt="Custos" />
+    <span class="brand-name">CUSTOS</span>
+    <span class="brand-tag">payment guardrail</span>
   </div>
   <div class="mandate-stat">
-    <span>Mandate</span>
-    <span class="value" id="mandateValue">loading…</span>
-    <div class="bar"><div class="bar-fill" id="mandateBarFill" style="width:0%"></div></div>
+    <a href="docs.html" style="color:var(--text-muted);font-size:12px;text-decoration:none;margin-right:var(--sp-2);border-right:1px solid var(--border-subtle);padding-right:var(--sp-4);">How it works</a>
+    <span class="mandate-label">Mandate</span>
+    <span class="mandate-value tnum" id="mandateValue">—</span>
+    <div class="mandate-bar"><div class="mandate-bar-fill" id="mandateBarFill" style="width:0%"></div></div>
   </div>
 </header>
 
 <main>
   <div class="pane">
-    <div class="pane-header">Merchant agent</div>
+    <div class="pane-header">Merchant Agent</div>
     <div id="log">
-      <div class="empty-state" id="emptyState">Send a message, or load a preset below to see a legitimate purchase versus an injected instruction handled side by side.</div>
+      <div class="empty-state" id="emptyState">Send a message, or load a preset to compare a legitimate purchase against an injected instruction.</div>
     </div>
     <div class="composer">
       <div class="presets">
@@ -180,8 +218,8 @@
         <button class="btn" onclick="loadPreset('injection')">Load injection attempt</button>
         <button class="btn" onclick="clearCtx()">Clear context</button>
       </div>
-      <label class="field-label">Untrusted context (simulates a fetched product page, ticket, or email the agent reads)</label>
-      <textarea id="ctxInput" placeholder="Optional — content the agent treats as data, not instructions"></textarea>
+      <label class="field-label">Untrusted context</label>
+      <textarea id="ctxInput" placeholder="Optional — content the agent treats as data, not instructions (a fetched product page, ticket, or email)"></textarea>
       <div class="send-row">
         <textarea id="msgInput" placeholder="Message the agent…"></textarea>
         <button class="btn btn-primary" id="sendBtn" onclick="send()">Send</button>
@@ -190,9 +228,9 @@
   </div>
 
   <div class="pane">
-    <div class="pane-header">Guardrail attestation</div>
+    <div class="pane-header">Guardrail Attestation</div>
     <div id="xray">
-      <div class="empty-state">Every payment attempt the agent makes will appear here, whether approved or blocked.</div>
+      <div class="empty-state">Every payment attempt will appear here, whether approved or blocked.</div>
     </div>
   </div>
 </main>
@@ -201,6 +239,9 @@
 const ORCH = "http://localhost:8000";
 const GATEWAY = "http://localhost:8200";
 let mandateId = null;
+
+const ICON_CHECK = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2.5 6.2 L4.8 8.5 L9.5 3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_X = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3 L9 9 M9 3 L3 9" stroke-linecap="round"/></svg>';
 
 const presets = {
   benign: {
@@ -224,14 +265,18 @@ function clearEmptyState(containerId) {
   if (el) el.remove();
 }
 
+function fmtRupee(n) {
+  return "₹" + Number(n).toLocaleString("en-IN");
+}
+
 function addMsg(role, text, pending) {
   clearEmptyState('log');
   const log = document.getElementById('log');
   const wrap = document.createElement('div');
   wrap.className = 'msg ' + role + (pending ? ' pending' : '');
-  const roleLabel = role === 'user' ? 'You' : 'Agent';
-  wrap.innerHTML = `<div class="role">${roleLabel}</div><div class="bubble"></div>`;
-  wrap.querySelector('.bubble').textContent = text;
+  const marker = role === 'user' ? '&gt;' : '#';
+  wrap.innerHTML = `<div class="msg-marker">${marker}</div><div class="msg-content"></div>`;
+  wrap.querySelector('.msg-content').textContent = text;
   log.appendChild(wrap);
   log.scrollTop = log.scrollHeight;
   return wrap;
@@ -243,7 +288,7 @@ function addXray(attempts) {
 
   if (!attempts || attempts.length === 0) {
     const div = document.createElement('div');
-    div.style.cssText = 'color:var(--text-faint);font-size:12px;padding:4px 2px;';
+    div.style.cssText = 'color:var(--text-muted);font-size:12px;';
     div.textContent = 'No payment tool call attempted for this turn.';
     xray.prepend(div);
     return;
@@ -253,34 +298,44 @@ function addXray(attempts) {
     const verdict = a.enclave_result.verdict;
     const approved = verdict === 'APPROVED';
     const reason = a.enclave_result.reason;
-    const gatewayStatus = a.gateway_result ? a.gateway_result.body.status : 'not called (unsigned)';
+    const gatewayStatus = a.gateway_result ? a.gateway_result.body.status : 'NOT CALLED (UNSIGNED)';
     const jwt = a.enclave_result.signed_jwt;
 
     const card = document.createElement('div');
     card.className = 'attempt-card';
     card.innerHTML = `
       <div class="attempt-card-top">
-        <span class="badge ${approved ? 'badge-approved' : 'badge-rejected'}">${verdict}</span>
-        <span class="attempt-latency">${a.enclave_result.latency_ms}ms</span>
+        <span class="badge ${approved ? 'badge-approved' : 'badge-rejected'}">
+          ${approved ? ICON_CHECK : ICON_X}${verdict}
+        </span>
+        <span class="attempt-latency tnum">${a.enclave_result.latency_ms}ms</span>
       </div>
       <dl class="kv-grid">
-        <dt>Amount</dt><dd>₹${a.tool_call.amount}</dd>
-        <dt>Recipient</dt><dd>${a.tool_call.recipient_vpa}</dd>
+        <dt>Amount</dt><dd class="tnum">${fmtRupee(a.tool_call.amount)}</dd>
+        <dt>Recipient</dt><dd class="mono">${a.tool_call.recipient_vpa}</dd>
         <dt>Reason</dt><dd class="${approved ? 'reason-ok' : 'reason-bad'}">${reason}</dd>
-        <dt>Gateway</dt><dd>${gatewayStatus}</dd>
+        <dt>Gateway</dt><dd class="mono">${gatewayStatus}</dd>
       </dl>
-      <div class="jwt-strip ${jwt ? '' : 'none'}">${jwt ? jwt.slice(0, 72) + '…' : '(no signature — rejected before signing)'}</div>
+      <div class="jwt-well">${jwt ? jwt.slice(0, 80) + '…' : 'no signature — rejected before signing'}</div>
     `;
     xray.prepend(card);
   });
 }
 
 async function refreshMandate() {
-  const r = await fetch(`${GATEWAY}/mandate?mandate_id=${mandateId}`);
-  const d = await r.json();
-  document.getElementById('mandateValue').textContent = `₹${d.remaining} / ₹${d.total_blocked}`;
-  const pct = Math.max(0, Math.min(100, (d.remaining / d.total_blocked) * 100));
-  document.getElementById('mandateBarFill').style.width = pct + '%';
+  try {
+    const r = await fetch(`${GATEWAY}/mandate?mandate_id=${mandateId}`);
+    const d = await r.json();
+    document.getElementById('mandateValue').textContent = `${fmtRupee(d.remaining)} / ${fmtRupee(d.total_blocked)}`;
+    const pct = Math.max(0, Math.min(100, (d.remaining / d.total_blocked) * 100));
+    document.getElementById('mandateBarFill').style.width = pct + '%';
+  } catch (e) {
+    document.getElementById('mandateValue').textContent = 'backend offline';
+    const empty = document.getElementById('emptyState');
+    if (empty) {
+      empty.innerHTML = 'This is the live app, not a mockup — but it talks to a backend running on <code style="font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:2px;">localhost</code>, which isn\'t running on this server. See <a href="docs.html" style="color:var(--primary-focus)">how it works</a> to run it yourself.';
+    }
+  }
 }
 
 async function send() {
@@ -294,7 +349,7 @@ async function send() {
 
   const sendBtn = document.getElementById('sendBtn');
   sendBtn.disabled = true;
-  const pendingMsg = addMsg('agent', 'Thinking…', true);
+  const pendingMsg = addMsg('agent', 'Awaiting response…', true);
 
   try {
     const resp = await fetch(`${ORCH}/chat`, {
@@ -308,7 +363,7 @@ async function send() {
     addXray(data.tool_attempts);
     refreshMandate();
   } catch (e) {
-    pendingMsg.querySelector('.bubble').textContent = 'Could not reach the orchestrator.';
+    pendingMsg.querySelector('.msg-content').textContent = 'Could not reach the orchestrator.';
     pendingMsg.classList.remove('pending');
   } finally {
     sendBtn.disabled = false;
@@ -322,7 +377,6 @@ document.getElementById('msgInput').addEventListener('keydown', (e) => {
   }
 });
 
-// Bootstrap: use the shared demo mandate seeded by the migration.
 mandateId = "11111111-1111-1111-1111-111111111111";
 refreshMandate();
 </script>
